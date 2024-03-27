@@ -154,19 +154,21 @@ class InternalParquetRecordWriter<T> {
       // flush the row group if it is within ~2 records of the limit
       // it is much better to be slightly under size than to be over at all
       if (memSize > (nextRowGroupSize - 2 * recordSize)) {
-        LOG.debug("mem size {} > {}: flushing {} records to disk.", memSize, nextRowGroupSize, recordCount);
+        LOG.debug("[ParquetRecordWriter-Patched] ###### mem size {} > {}: flushing {} records to disk.", memSize, nextRowGroupSize, recordCount);
         flushRowGroupToStore();
         initStore();
-        recordCountForNextMemCheck = min(max(props.getMinRowCountForPageSizeCheck(), recordCount / 2),
-          props.getMaxRowCountForPageSizeCheck());
+        // recordCountForNextMemCheck = min(max(props.getMinRowCountForPageSizeCheck(), recordCount / 2),
+        //   props.getMaxRowCountForPageSizeCheck());
+        recordCountForNextMemCheck = 100;
         this.lastRowGroupEndPos = parquetFileWriter.getPos();
       } else {
-        recordCountForNextMemCheck = min(
-            max(props.getMinRowCountForPageSizeCheck(),
-              (recordCount + (long)(nextRowGroupSize / ((float)recordSize))) / 2), // will check halfway
-            recordCount + props.getMaxRowCountForPageSizeCheck() // will not look more than max records ahead
-            );
-        LOG.debug("Checked mem at {} will check again at: {}", recordCount, recordCountForNextMemCheck);
+        // recordCountForNextMemCheck = min(
+        //     max(props.getMinRowCountForPageSizeCheck(),
+        //       (recordCount + (long)(nextRowGroupSize / ((float)recordSize))) / 2), // will check halfway
+        //     recordCount + props.getMaxRowCountForPageSizeCheck() // will not look more than max records ahead
+        //     );
+        recordCountForNextMemCheck = recordCount + 100; 
+        LOG.debug("[ParquetRecordWriter-Patched] ###### Checked mem at {} will check again at: {}", recordCount, recordCountForNextMemCheck);
       }
     }
   }
